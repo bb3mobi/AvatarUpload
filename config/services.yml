@@ -1,0 +1,17 @@
+services:
+    bb3mobi.AvatarUpload.listener:
+        class: bb3mobi\AvatarUpload\event\listener
+        arguments:
+            - @user
+            - @request
+            - @dbal.conn
+            - @bb3mobi.AvatarUpload.resize
+        tags:
+            - { name: event.listener }
+    bb3mobi.AvatarUpload.resize:
+        class: bb3mobi\AvatarUpload\core\resize
+        arguments:
+            - @config
+            - @user
+            - %core.root_path%
+            - %core.php_ext%
