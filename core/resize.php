@@ -11,28 +11,6 @@ namespace bb3mobi\AvatarUpload\core;
 
 class resize
 {
-	/** @var \phpbb\config\config */
-	protected $config;
-
-	/** @var \phpbb\user */
-	protected $user;
-
-	protected $phpbb_root_path;
-
-	protected $php_ext;
-
-	public function __construct(\phpbb\config\config $config, \phpbb\user $user, $phpbb_root_path, $php_ext)
-	{
-		$this->config = $config;
-		$this->user = $user;
-		$this->phpbb_root_path = $phpbb_root_path;
-		$this->php_ext = $php_ext;
-	}
-
-	/**
-	* @var \phpbb\mimetype\guesser
-	*/
-	protected $mimetype_guesser;
 	/**
 	* Array of allowed avatar image extensions
 	* Array is used for setting the allowed extensions in the fileupload class
@@ -48,6 +26,51 @@ class resize
 		'png',
 	);
 
+	/** @var \phpbb\config\config */
+	protected $config;
+
+	/** @var \phpbb\user */
+	protected $user;
+
+	/** @var \phpbb\mimetype\guesser */
+	protected $mimetype_guesser;
+
+	/** @var \phpbb\controller\helper */
+	protected $helper;
+
+	protected $phpbb_root_path;
+
+	protected $php_ext;
+
+	public function __construct(\phpbb\config\config $config, \phpbb\user $user, \phpbb\mimetype\guesser $mimetype_guesser, \phpbb\controller\helper $helper, $phpbb_root_path, $php_ext)
+	{
+		$this->config = $config;
+		$this->user = $user;
+		$this->mimetype_guesser = $mimetype_guesser;
+		$this->helper = $helper;
+		$this->phpbb_root_path = $phpbb_root_path;
+		$this->php_ext = $php_ext;
+	}
+
+	public function avatar_explain()
+	{
+		global $phpbb_container;
+
+		$context = $phpbb_container->get('template_context');
+		$this->tpldata = $context->get_data_ref();
+
+		if (isset($this->tpldata['.'][0]['L_AVATAR_EXPLAIN']))
+		{
+			$this->user->add_lang_ext('bb3mobi/AvatarUpload', 'avatar_upload');
+
+			$avatar_explain = $this->user->lang('AVATAR_EXPLAIN', $this->user->lang('PIXELS', (int) $this->config['avatar_upload_max_width']), $this->user->lang('PIXELS', (int) $this->config['avatar_upload_max_height']), round($this->config['avatar_filesize'] / 1024));
+
+			$avatar_explain2 = $this->user->lang('AVATAR_EXPLAIN2', $this->user->lang('PIXELS', (int) $this->config['avatar_max_width']), $this->user->lang('PIXELS', (int) $this->config['avatar_max_height']));
+
+			$this->tpldata['.'][0]['L_AVATAR_EXPLAIN'] = $avatar_explain . '<p class="error">' . $avatar_explain2 . '</p>';
+		}
+	}
+
 	public function avatar_upload_resize($row)
 	{
 		if (!class_exists('fileupload'))
@@ -55,14 +78,20 @@ class resize
 			include($this->phpbb_root_path . 'includes/functions_upload.' . $this->php_ext);
 		}
 
-		$upload = new \fileupload('AVATAR_', $this->allowed_extensions, $this->config['avatar_filesize'], $this->config['avatar_min_width'], $this->config['avatar_min_height'], 2400, 2400, (isset($this->config['mime_triggers']) ? explode('|', $this->config['mime_triggers']) : false));
+		$upload = new \fileupload('AVATAR_', $this->allowed_extensions, $this->config['avatar_filesize'], $this->config['avatar_min_width'], $this->config['avatar_min_height'],  $this->config['avatar_upload_max_width'], $this->config['avatar_upload_max_height'], (isset($this->config['mime_triggers']) ? explode('|', $this->config['mime_triggers']) : false));
 
 		$file = $upload->form_upload('avatar_upload_file', $this->mimetype_guesser);
 
-		$avatar_max_width = $this->config['avatar_max_width'];
-		$avatar_max_height = $this->config['avatar_max_height'];
-
 		$prefix = $this->config['avatar_salt'] . '_';
+		$file->clean_filename('avatar', $prefix, $row['id']);
+
+		// If there was an error during upload, then abort operation
+		if (sizeof($file->error))
+		{
+			$file->remove();
+			$error = $file->error;
+			return false;
+		}
 
 		// Calculate new destination
 		$destination = $this->config['avatar_path'];
@@ -88,10 +117,6 @@ class resize
 			$file->remove();
 			trigger_error(implode('<br />', $file->error));
 		}
-		else
-		{
-			rename($this->phpbb_root_path . $destination . '/' . utf8_basename($file->realname), $destination_file);
-		}
 
 		// Delete current avatar if not overwritten
 		$ext = substr(strrchr($row['avatar'], '.'), 1);
@@ -100,74 +125,18 @@ class resize
 			$this->delete($row);
 		}
 
-		$avatar_width = $file->width;
-		$avatar_height = $file->height;
-
-		if ($avatar_width > $avatar_max_width || $avatar_height > $avatar_max_height)
+		if ($file->width > $this->config['avatar_max_width'] || $file->height > $this->config['avatar_max_height'])
 		{
-			if ($avatar_height > $avatar_max_height OR $avatar_width > $avatar_max_width)
-			{
-				if ($avatar_width > $avatar_max_width)
-				{
-					$avatar_height = $avatar_height / ($avatar_width / $avatar_max_width);
-					$avatar_width = $avatar_max_width;
-				}
-
-				if ($avatar_height > $avatar_max_height)
-				{
-					$avatar_width = $avatar_width / ($avatar_height / $avatar_max_height);
-					$avatar_height = $avatar_max_height;
-				}
-
-				$destination = imagecreatetruecolor($avatar_width, $avatar_height);
-
-				switch ($file->extension)
-				{
-					case 'jpg':
-					case 'jpeg':
-						$source = imagecreatefromjpeg($destination_file);
-					break;
-
-					case 'png':
-						$source = imagecreatefrompng($destination_file);
-						$color = imagecolorallocatealpha($destination, 0, 0, 0, 127);
-						imagefill($destination, 0, 0, $color);
-					break;
-
-					case 'gif':
-						$source = imagecreatefromgif($destination_file);
-					break;
-				}
-
-				if (isset($source))
-				{
-					imagecopyresampled($destination, $source, 0, 0, 0, 0, $avatar_width, $avatar_height, $file->width, $file->height);
-				}
-
-				switch ($file->extension)
-				{
-					case 'jpg':
-					case 'jpeg':
-						imagejpeg($destination, $destination_file);
-					break;
-
-					case 'png':
-						imagealphablending($destination, true);
-						imagesavealpha($destination, true);
-						imagepng($destination, $destination_file);
-					break;
-
-					case 'gif':
-						imagegif($destination, $destination_file);
-					break;
-				}
-			}
+			$destination = 'ext/bb3mobi/AvatarUpload/images';
+			$destination_edit_file = $this->phpbb_root_path . $destination . '/' . $row['id'] . '.' . $file->get('extension');
+			rename($destination_file, $destination_edit_file);
+			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)));
 		}
 
 		return array(
 			'avatar'		=> $row['id'] . '_' . time() . '.' . $file->get('extension'),
-			'avatar_width'	=> $avatar_width,
-			'avatar_height'	=> $avatar_height,
+			'avatar_width'	=> $file->width,
+			'avatar_height'	=> $file->height,
 		);
 	}
 

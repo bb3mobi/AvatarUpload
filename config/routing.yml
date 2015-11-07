@@ -1,0 +1,5 @@
+bb3mobi_AvatarUpload_crop:
+    path: /crop/{avatar_id}
+    defaults: { _controller: bb3mobi.AvatarUpload.crop:avatar_crop }
+    requirements:
+        avatar_id: \d+

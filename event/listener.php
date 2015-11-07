@@ -41,6 +41,8 @@ class listener implements EventSubscriberInterface
 			* @var	array	error				Array of errors, if filled in by this event file will not be moved
 			*/
 			'core.avatar_driver_upload_move_file_before'	=> 'avatar_upload_move_file',
+			'core.page_footer'					=> 'avatar_explain',
+			'core.acp_board_config_edit_add'	=> 'acp_avatar_add_config',
 		);
 	}
 
@@ -72,6 +74,30 @@ class listener implements EventSubscriberInterface
 					trigger_error($message);
 				}
 			}
+		}
+	}
+
+	public function avatar_explain($event)
+	{
+		$this->resize->avatar_explain();
+	}
+
+	public function acp_avatar_add_config($event)
+	{
+		$mode = $event['mode'];
+		if ($mode == 'avatar')
+		{
+			$new_config = array(
+				//'avatar_upload_filesize'	=> array('lang' => 'MAX_FILESIZE_UPLOAD',	'validate' => 'int:0',	'type' => 'number:0', 'explain' => true, 'append' => ' ' . $this->user->lang['BYTES']),
+				'avatar_upload_max_width'	=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => false, 'method' => false, 'explain' => false),
+				'avatar_upload_max_height'	=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => false, 'method' => false, 'explain' => false),
+				'avatar_upload_max'			=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => 'dimension:0', 'explain' => true, 'append' => ' ' . $this->user->lang['PIXEL']),
+			);
+			$search_slice = 'allow_avatar_upload';
+
+			$display_vars = $event['display_vars'];
+			$display_vars['vars'] = phpbb_insert_config_array($display_vars['vars'], $new_config, array('after' => $search_slice));
+			$event['display_vars'] = array('title' => $display_vars['title'], 'vars' => $display_vars['vars']);
 		}
 	}
 }

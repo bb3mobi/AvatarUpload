@@ -13,5 +13,18 @@ services:
         arguments:
             - @config
             - @user
+            - @mimetype.guesser
+            - @controller.helper
+            - %core.root_path%
+            - %core.php_ext%
+    bb3mobi.AvatarUpload.crop:
+        class: bb3mobi\AvatarUpload\controller\crop
+        arguments:
+            - @template
+            - @config
+            - @user
+            - @request
+            - @dbal.conn
+            - @controller.helper
             - %core.root_path%
             - %core.php_ext%

@@ -1,0 +1,61 @@
+<!-- INCLUDE overall_header.html -->
+
+<form method="post" action="{S_CROP_ACTION}" id="coords" class="coords">
+
+<div class="panel jc-demo-box">
+	<div class="inner">
+		<h2>{L_AVATAR_UPLOAD}</h2>
+		<!-- IF ERROR --><p class="error">{ERROR}</p><!-- ENDIF -->
+		<div class="content"><img id="target" src="{AVATAR_FILE}" alt="" /></div>
+		<div class="bg1">
+			<div id="interface"></div>
+			<label class="checkbox">
+				<input type="checkbox" id="fadetog" /> {L_FADETOG}
+			</label>
+			<label class="checkbox">
+				<input type="checkbox" id="shadetog" /> {L_SHADETOG}
+			</label>
+		</div>
+	</div>
+</div>
+
+<p class="submit-buttons">{L_AVATAR_UPLOAD_EXT}</p>
+
+<table width="100%">
+	<thead>
+		<tr><th class="header">{L_SIZE_X1}</th><th class="header">{L_SIZE_Y1}</th></tr>
+	</thead>
+
+	<tbody>
+		<tr>
+			<td class="bg1"><input type="number" class="inputbox autowidth" id="x1" name="x1" value="{SIZE_X1}" /></td>
+			<td class="bg2"><input type="number" class="inputbox autowidth" id="y1" name="y1" value="{SIZE_Y1}" /></td>
+		</tr>
+	</tbody>
+</table>
+
+<table width="100%">
+	<thead>
+		<tr><th class="header">{L_SIZE_WIDTH}</th><th class="header">{L_SIZE_HEIGHT}</th></tr>
+	</thead>
+
+	<tbody>
+		<tr>
+			<td class="bg1"><input type="number" class="inputbox autowidth" id="w" name="w" value="{SIZE_WIDTH}" /></td>
+			<td class="bg2"><input type="number" class="inputbox autowidth" id="h" name="h" value="{SIZE_HEIGHT}" /></td>
+		</tr>
+	</tbody>
+</table>
+
+<input type="hidden" id="x2" name="x2" value="{SIZE_X2}" />
+<input type="hidden" id="y2" name="y2" value="{SIZE_Y2}" />
+
+<div class="panel submit-buttons">
+	{S_HIDDEN_FIELDS}
+	<input type="submit" name="submit" id="submit" value="{L_SUBMIT}" class="button1 default-submit-action" />
+	{S_FORM_TOKEN}
+</div>
+
+</form>
+
+<!-- INCLUDE overall_footer.html -->
