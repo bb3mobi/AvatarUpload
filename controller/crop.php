@@ -151,7 +151,7 @@ class crop
 
 				$this->db->sql_query($sql);
 
-				meta_refresh(3, generate_board_url());
+				meta_refresh(3, generate_board_url(), true);
 				$message = $this->user->lang['PROFILE_UPDATED'] . '<br /><br />' . sprintf($this->user->lang['RETURN_INDEX'], '<a href="' . generate_board_url() . '">', '</a>');
 				trigger_error($message);
 			}
