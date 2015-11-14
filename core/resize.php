@@ -130,7 +130,7 @@ class resize
 			$destination = 'ext/bb3mobi/AvatarUpload/images';
 			$destination_edit_file = $this->phpbb_root_path . $destination . '/' . $row['id'] . '.' . $file->get('extension');
 			rename($destination_file, $destination_edit_file);
-			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)));
+			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)), false, true);
 		}
 
 		return array(

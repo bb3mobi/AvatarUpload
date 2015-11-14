@@ -1,7 +1,7 @@
 {
     "name": "bb3mobi/AvatarUpload",
     "type": "phpbb-extension",
-    "description": "",
+    "description": "Avatar Upload - Visual resize trim",
     "homepage": "http://phpbbguru.net",
     "keywords": ["avatar", "file", "image", "upload", "resize", "crop"],
     "version": "1.0.0",
