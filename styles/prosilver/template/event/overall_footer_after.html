@@ -3,17 +3,34 @@
 <!-- INCLUDEJS @bb3mobi_AvatarUpload/jquery.color.js -->
 <script type="text/javascript">
 jQuery(function($){
-	var jcrop_api;
-
+	// Create variables (in this scope) to hold the API and image size
+	var jcrop_api,
+		boundx,
+		boundy,
+		// Grab some information about the preview pane
+		$preview = $('#preview-pane'),
+		$pcnt = $('#preview-pane .preview-container'),
+		$pimg = $('#preview-pane .preview-container img'),
+		xsize = $pcnt.width(),
+		ysize = $pcnt.height();
+	console.log('init',[xsize, ysize]);
 	$('#target').Jcrop({
-		bgFade:     true,
+		bgFade: true,
 		bgOpacity: .2,
 		setSelect: [ 60, 70, 540, 330 ],
-		onChange:   showCoords,
-		onSelect:   showCoords,
-		onRelease:  clearCoords,
+		onChange: showCoords,
+		onSelect: showCoords,
+		onRelease: clearCoords,
+		aspectRatio: xsize / ysize,
 	},function(){
-	  jcrop_api = this;
+		// Use the API to get the real image size
+		var bounds = this.getBounds();
+		boundx = bounds[0];
+		boundy = bounds[1];
+		// Store the API in the jcrop_api variable
+		jcrop_api = this;
+		// Move the preview into the jcrop container for css positioning
+		//$preview.appendTo(jcrop_api.ui.holder);
 	});
 
 	$('#coords').on('change','input',function(e){
@@ -23,21 +40,22 @@ jQuery(function($){
 			y2 = $('#y2').val();
 		jcrop_api.setSelect([x1,y1,x2,y2]);
 	});
-
 	$('#fadetog').change(function(){
 		jcrop_api.setOptions({
 			bgFade: this.checked
 		});
 	}).attr('checked','checked');
-
 	$('#shadetog').change(function(){
-		if (this.checked) $('#shadetxt').slideDown();
-		else $('#shadetxt').slideUp();
+		if (this.checked) {
+			$('#shadetxt').slideDown();
+		}
+		else {
+			$('#shadetxt').slideUp();
+		}
 		jcrop_api.setOptions({
 			shade: this.checked
 		});
-	}).attr('checked',false);
-
+	}).attr('checked', false);
 	// Define page sections
 	var sections = {
 		bgc_buttons: '{L_BGC_BUTTONS}',
@@ -69,62 +87,53 @@ jQuery(function($){
 		K: 'black'
 	};
 	// Create fieldset targets for buttons
-	for(i in sections)
-		insertSection(i,sections[i]);
-
+	for(i in sections) {
+		insertSection(i, sections[i]);
+	}
 	function create_btn(c) {
-		var $o = $('<button />').addClass('button2');
+		var $o = $('<a />').addClass('button');
 		if (c) $o.append(c);
 		return $o;
 	}
-
 	var a_count = 1;
 	// Create animation buttons
 	for(i in ac) {
 		$('#anim_buttons .btn-group')
-		.append(
-			create_btn(a_count++).click(animHandler(ac[i])),
-			' '
-		);
+		.append(create_btn(a_count++).click(animHandler(ac[i])), ' ');
 	}
-
 	$('#anim_buttons .btn-group').append(
 		create_btn('Bye!').click(function(e){
-		$(e.target).addClass('active');
-		jcrop_api.animateTo(
-			[300,200,300,200],
-			function(){
-			this.release();
-			$(e.target).closest('.btn-group').find('.active').removeClass('active');
-		  }
-		);
-		return false;
-	  })
+			$(e.target).addClass('active');
+			jcrop_api.animateTo(
+				[300,200,300,200],
+				function(){
+					this.release();
+					$(e.target).closest('.btn-group').find('.active').removeClass('active');
+				}
+			);
+			return false;
+		})
 	);
-
 	// Create bgOpacity buttons
 	for(i in bgo) {
-		$('#bgo_buttons .btn-group').append(
-		create_btn(i).click(setoptHandler('bgOpacity',bgo[i])),
-		' '
-	  );
+		$('#bgo_buttons .btn-group').append(create_btn(i).click(setoptHandler('bgOpacity',bgo[i])), ' ');
 	}
 	// Create bgColor buttons
 	for(i in bgc) {
 		$('#bgc_buttons .btn-group').append(
-		create_btn(i).css({
-			background: bgc[i],
-			color: ((i == 'K') || (i == 'R'))?'white':'black'
-		}).click(setoptHandler('bgColor',bgc[i])), ' '
-	  );
+			create_btn(i).css({
+				background: bgc[i],
+				color: ((i == 'K') || (i == 'R')) ? 'white' : 'black'
+			}).click(setoptHandler('bgColor', bgc[i])), ' '
+		);
 	}
 	// Function to insert named sections into interface
 	function insertSection(k,v) {
 		$('#interface').prepend(
-		$('<fieldset></fieldset>').attr('id',k).append(
-			$('<legend></legend>').append(v),
-			'<div class="cp-mini bg3"><div class="btn-group"></div></div>'
-		)
+			$('<div></div>').attr('id', k).append(
+				$('<h3></h3>').append(v),
+				'<div class="btn-group"></div>'
+			)
 		);
 	};
 	// Handler for option-setting buttons
@@ -140,34 +149,42 @@ jQuery(function($){
 	};
 	// Handler for animation buttons
 	function animHandler(v) {
-	  return function(e) {
-		$(e.target).addClass('active');
-		jcrop_api.animateTo(v,function(){
-			$(e.target).closest('.btn-group').find('.active').removeClass('active');
-		});
-		return false;
+		return function(e) {
+			$(e.target).addClass('active');
+			jcrop_api.animateTo(v,function(){
+				$(e.target).closest('.btn-group').find('.active').removeClass('active');
+			});
+			return false;
 		};
 	};
-
 	$('#bgo_buttons .btn:first,#bgc_buttons .btn:last').addClass('active');
 	$('#interface').show();
-	});
 
 	// Simple event handler, called from onChange and onSelect
 	// event handlers, as per the Jcrop invocation above
-	function showCoords(c)
-	{
+	function showCoords(c) {
 		$('#x1').val(c.x);
 		$('#y1').val(c.y);
 		$('#x2').val(c.x2);
 		$('#y2').val(c.y2);
 		$('#w').val(c.w);
 		$('#h').val(c.h);
-	};
 
-	function clearCoords()
-	{
+		// Update preview
+		if (parseInt(c.w) > 0) {
+			var rx = xsize / c.w;
+			var ry = ysize / c.h;
+			$pimg.css({
+				width: Math.round(rx * boundx) + 'px',
+				height: Math.round(ry * boundy) + 'px',
+				marginLeft: '-' + Math.round(rx * c.x) + 'px',
+				marginTop: '-' + Math.round(ry * c.y) + 'px'
+			});
+		}
+	};
+	function clearCoords() {
 		$('#coords input').val('');
 	};
+});
 </script>
 <!-- ENDIF -->

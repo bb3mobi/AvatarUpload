@@ -48,6 +48,9 @@ class crop
 		$this->php_ext = $php_ext;
 	}
 
+	/** Path to edit file */
+	private $d_edit = 'ext/bb3mobi/AvatarUpload/images';
+
 	public function avatar_crop($avatar_id)
 	{
 		$extension = $this->request->variable('ext', '');
@@ -72,8 +75,7 @@ class crop
 
 		$destination_file = $this->phpbb_root_path . $destination . '/' . $prefix . $avatar_id . '.' . $extension;
 
-		$destination_old = 'ext/bb3mobi/AvatarUpload/images';
-		$destination_old_file = $this->phpbb_root_path . $destination_old . '/' . $avatar_id . '.' . $extension;
+		$destination_old_file = $this->phpbb_root_path . $this->d_edit . '/' . $avatar_id . '.' . $extension;
 
 		$this->user->setup('ucp');
 		$this->user->add_lang_ext('bb3mobi/AvatarUpload', 'avatar_upload');
@@ -133,7 +135,7 @@ class crop
 
 		if (!sizeof($error) && $submit)
 		{
-			if ($result = $this->resize($params_size, $destination_old, $destination_old_file))
+			if ($result = $this->resize($params_size, $this->d_edit, $destination_old_file))
 			{
 				rename($destination_old_file, $destination_file);
 
@@ -159,7 +161,9 @@ class crop
 
 		$this->template->assign_vars(array(
 			'ERROR'				=> (sizeof($error)) ? implode('<br />', $error) : '',
-			'AVATAR_FILE'		=> generate_board_url() . '/' . $destination_old . '/' . $avatar_id . '.' . $extension,
+			'AVATAR_FILE'		=> generate_board_url() . '/' . $this->d_edit . '/' . $avatar_id . '.' . $extension,
+			'IMG_WIDTH'			=> $image_info[0],
+			'IMG_HEIGHT'		=> $image_info[1],
 			'SIZE_X1'			=> $params_size['x1'],
 			'SIZE_X2'			=> $params_size['x2'],
 			'SIZE_Y1'			=> $params_size['y1'],

@@ -3,17 +3,17 @@
 <!-- INCLUDEJS @bb3mobi_AvatarUpload/jquery.color.js -->
 <script type="text/javascript">
 jQuery(function($){
-	var jcrop_api;
+	//var jcrop_api;
 
 	$('#target').Jcrop({
-		bgFade:     true,
+		bgFade: true,
 		bgOpacity: .2,
 		setSelect: [ 60, 70, 540, 330 ],
-		onChange:   showCoords,
-		onSelect:   showCoords,
-		onRelease:  clearCoords,
+		onChange: showCoords,
+		onSelect: showCoords,
+		onRelease: clearCoords,
 	},function(){
-	  jcrop_api = this;
+		jcrop_api = this;
 	});
 
 	$('#coords').on('change','input',function(e){
@@ -31,8 +31,12 @@ jQuery(function($){
 	}).attr('checked','checked');
 
 	$('#shadetog').change(function(){
-		if (this.checked) $('#shadetxt').slideDown();
-		else $('#shadetxt').slideUp();
+		if (this.checked) {
+			$('#shadetxt').slideDown();
+		}
+		else {
+			$('#shadetxt').slideUp();
+		}
 		jcrop_api.setOptions({
 			shade: this.checked
 		});
@@ -69,11 +73,12 @@ jQuery(function($){
 		K: 'black'
 	};
 	// Create fieldset targets for buttons
-	for(i in sections)
-		insertSection(i,sections[i]);
+	for(i in sections) {
+		insertSection(i, sections[i]);
+	}
 
 	function create_btn(c) {
-		var $o = $('<button />').addClass('button2');
+		var $o = $('<a />').addClass('button');
 		if (c) $o.append(c);
 		return $o;
 	}
@@ -82,10 +87,7 @@ jQuery(function($){
 	// Create animation buttons
 	for(i in ac) {
 		$('#anim_buttons .btn-group')
-		.append(
-			create_btn(a_count++).click(animHandler(ac[i])),
-			' '
-		);
+		.append(create_btn(a_count++).click(animHandler(ac[i])), ' ');
 	}
 
 	$('#anim_buttons .btn-group').append(
@@ -94,9 +96,9 @@ jQuery(function($){
 		jcrop_api.animateTo(
 			[300,200,300,200],
 			function(){
-			this.release();
-			$(e.target).closest('.btn-group').find('.active').removeClass('active');
-		  }
+				this.release();
+				$(e.target).closest('.btn-group').find('.active').removeClass('active');
+			}
 		);
 		return false;
 	  })
@@ -104,27 +106,24 @@ jQuery(function($){
 
 	// Create bgOpacity buttons
 	for(i in bgo) {
-		$('#bgo_buttons .btn-group').append(
-		create_btn(i).click(setoptHandler('bgOpacity',bgo[i])),
-		' '
-	  );
+		$('#bgo_buttons .btn-group').append(create_btn(i).click(setoptHandler('bgOpacity',bgo[i])), ' ');
 	}
 	// Create bgColor buttons
 	for(i in bgc) {
 		$('#bgc_buttons .btn-group').append(
-		create_btn(i).css({
-			background: bgc[i],
-			color: ((i == 'K') || (i == 'R'))?'white':'black'
-		}).click(setoptHandler('bgColor',bgc[i])), ' '
-	  );
+			create_btn(i).css({
+				background: bgc[i],
+				color: ((i == 'K') || (i == 'R')) ? 'white' : 'black'
+			}).click(setoptHandler('bgColor', bgc[i])), ' '
+		);
 	}
 	// Function to insert named sections into interface
 	function insertSection(k,v) {
 		$('#interface').prepend(
-		$('<fieldset></fieldset>').attr('id',k).append(
-			$('<legend></legend>').append(v),
-			'<div class="cp-mini bg3"><div class="btn-group"></div></div>'
-		)
+			$('<div></div>').attr('id', k).append(
+				$('<h3></h3>').append(v),
+				'<div class="btn-group"></div>'
+			)
 		);
 	};
 	// Handler for option-setting buttons
@@ -140,34 +139,32 @@ jQuery(function($){
 	};
 	// Handler for animation buttons
 	function animHandler(v) {
-	  return function(e) {
-		$(e.target).addClass('active');
-		jcrop_api.animateTo(v,function(){
-			$(e.target).closest('.btn-group').find('.active').removeClass('active');
-		});
-		return false;
+		return function(e) {
+			$(e.target).addClass('active');
+			jcrop_api.animateTo(v,function(){
+				$(e.target).closest('.btn-group').find('.active').removeClass('active');
+			});
+			return false;
 		};
 	};
 
 	$('#bgo_buttons .btn:first,#bgc_buttons .btn:last').addClass('active');
 	$('#interface').show();
-	});
+});
 
-	// Simple event handler, called from onChange and onSelect
-	// event handlers, as per the Jcrop invocation above
-	function showCoords(c)
-	{
-		$('#x1').val(c.x);
-		$('#y1').val(c.y);
-		$('#x2').val(c.x2);
-		$('#y2').val(c.y2);
-		$('#w').val(c.w);
-		$('#h').val(c.h);
-	};
+// Simple event handler, called from onChange and onSelect
+// event handlers, as per the Jcrop invocation above
+function showCoords(c) {
+	$('#x1').val(c.x);
+	$('#y1').val(c.y);
+	$('#x2').val(c.x2);
+	$('#y2').val(c.y2);
+	$('#w').val(c.w);
+	$('#h').val(c.h);
+};
 
-	function clearCoords()
-	{
-		$('#coords input').val('');
-	};
+function clearCoords() {
+	$('#coords input').val('');
+};
 </script>
 <!-- ENDIF -->

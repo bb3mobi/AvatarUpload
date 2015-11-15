@@ -10,12 +10,16 @@
 
 		<!-- IF ERROR --><p class="error">{ERROR}</p><!-- ENDIF -->
 
-		<div id="cp-main">
-			<div class="content" style="overflow:auto"><img id="target" src="{AVATAR_FILE}" alt="" /></div>
-		</div>
-
 		<div id="cp-menu">
+
+			<div class="cp-mini" id="preview-pane">
+				<div class="preview-container" style="width: 160px; height: 160px; overflow: hidden">
+					<img src="{AVATAR_FILE}" class="jcrop-preview" alt="Preview" />
+				</div>
+			</div>
+
 			<div id="interface"></div>
+
 			<div class="cp-mini">
 				<label class="checkbox">
 					<input type="checkbox" id="fadetog" /> {L_FADETOG}
@@ -27,6 +31,16 @@
 					<input type="checkbox" id="shadetog" /> {L_SHADETOG}
 				</label>
 			</div>
+
+			<div id="shadetxt" class="hidden">
+			<span class="error">Experimental shader active.</span> Jcrop now includes a shading mode that facilitates building better transparent Jcrop instances. The experimental shader is less robust than Jcrop's default shading method and should only be used if you require this functionality.
+			</div>
+
+		</div>
+
+		<div id="cp-main">
+			<!--  style="overflow:auto" -->
+			<div class="content"><img id="target" src="{AVATAR_FILE}" width="{IMG_WIDTH}" height="{IMG_HEIGHT}" alt="" /></div>
 		</div>
 
 		<p>{L_AVATAR_UPLOAD_EXT}</p>

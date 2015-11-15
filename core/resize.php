@@ -11,21 +11,6 @@ namespace bb3mobi\AvatarUpload\core;
 
 class resize
 {
-	/**
-	* Array of allowed avatar image extensions
-	* Array is used for setting the allowed extensions in the fileupload class
-	* and as a base for a regex of allowed extensions, which will be formed by
-	* imploding the array with a "|".
-	*
-	* @var array
-	*/
-	protected $allowed_extensions = array(
-		'gif',
-		'jpg',
-		'jpeg',
-		'png',
-	);
-
 	/** @var \phpbb\config\config */
 	protected $config;
 
@@ -51,6 +36,26 @@ class resize
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $php_ext;
 	}
+	/**
+	* Array of allowed avatar image extensions
+	* Array is used for setting the allowed extensions in the fileupload class
+	* and as a base for a regex of allowed extensions, which will be formed by
+	* imploding the array with a "|".
+	*
+	* @var array
+	*/
+	protected $allowed_extensions = array(
+		'gif',
+		'jpg',
+		'jpeg',
+		'png',
+	);
+
+	/** Path to edit file */
+	private $d_edit = 'ext/bb3mobi/AvatarUpload/images';
+
+	/** Max size to display */
+	private $max_size = 900;
 
 	public function avatar_explain()
 	{
@@ -125,10 +130,22 @@ class resize
 			$this->delete($row);
 		}
 
+		if ($file->width > $this->max_size || $file->height > $this->max_size)
+		{
+			$avatar_info = $this->resize(array(
+				'w' => $file->width,
+				'h' => $file->height,
+				'ext' => $file->extension),
+				$destination, $destination_file);
+
+			/** New file width & height */
+			$file->width = $avatar_info['avatar_width'];
+			$file->height = $avatar_info['avatar_height'];
+		}
+
 		if ($file->width > $this->config['avatar_max_width'] || $file->height > $this->config['avatar_max_height'])
 		{
-			$destination = 'ext/bb3mobi/AvatarUpload/images';
-			$destination_edit_file = $this->phpbb_root_path . $destination . '/' . $row['id'] . '.' . $file->get('extension');
+			$destination_edit_file = $this->phpbb_root_path . $this->d_edit . '/' . $row['id'] . '.' . $file->get('extension');
 			rename($destination_file, $destination_edit_file);
 			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)), false, true);
 		}
@@ -137,6 +154,75 @@ class resize
 			'avatar'		=> $row['id'] . '_' . time() . '.' . $file->get('extension'),
 			'avatar_width'	=> $file->width,
 			'avatar_height'	=> $file->height,
+		);
+	}
+
+	private function resize($params, $destination, $destination_file)
+	{
+		$avatar_max_width = $this->max_size;
+		$avatar_max_height = $this->max_size;
+
+		$avatar_width = $params['w'];
+		$avatar_height = $params['h'];
+
+		if ($avatar_width > $avatar_max_width)
+		{
+			$avatar_height = $avatar_height / ($avatar_width / $avatar_max_width);
+			$avatar_width = $avatar_max_width;
+		}
+
+		if ($avatar_height > $avatar_max_height)
+		{
+			$avatar_width = $avatar_width / ($avatar_height / $avatar_max_height);
+			$avatar_height = $avatar_max_height;
+		}
+
+		$destination = imagecreatetruecolor($avatar_width, $avatar_height);
+
+		switch ($params['ext'])
+		{
+			case 'jpg':
+			case 'jpeg':
+				$source = imagecreatefromjpeg($destination_file);
+			break;
+
+			case 'png':
+				$source = imagecreatefrompng($destination_file);
+				$color = imagecolorallocatealpha($destination, 0, 0, 0, 127);
+				imagefill($destination, 0, 0, $color);
+			break;
+
+			case 'gif':
+				$source = imagecreatefromgif($destination_file);
+			break;
+		}
+
+		if (isset($source))
+		{
+			imagecopyresampled($destination, $source, 0, 0, 0, 0, $avatar_width, $avatar_height, $params['w'], $params['h']);
+		}
+
+		switch ($params['ext'])
+		{
+			case 'jpg':
+			case 'jpeg':
+				imagejpeg($destination, $destination_file, 90);
+			break;
+
+			case 'png':
+				imagealphablending($destination, true);
+				imagesavealpha($destination, true);
+				imagepng($destination, $destination_file);
+			break;
+
+			case 'gif':
+				imagegif($destination, $destination_file);
+			break;
+		}
+
+		return array(
+			'avatar_width'	=> $avatar_width,
+			'avatar_height'	=> $avatar_height,
 		);
 	}
 
