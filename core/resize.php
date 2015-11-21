@@ -147,6 +147,7 @@ class resize
 		{
 			$destination_edit_file = $this->phpbb_root_path . $this->d_edit . '/' . $row['id'] . '.' . $file->get('extension');
 			rename($destination_file, $destination_edit_file);
+			phpbb_chmod($destination_edit_file, CHMOD_READ);
 			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)), false, true);
 		}
 
