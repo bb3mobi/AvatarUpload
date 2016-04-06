@@ -3,7 +3,7 @@
 /**
 *
 * @package Resize upload avatar
-* @copyright bb3.mobi 2015 (c) Anvar (resspect.ru)
+* @copyright bb3.mobi 2015 (c) Anvar (apwa.ru)
 * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 */
 
@@ -148,6 +148,7 @@ class resize
 			$destination_edit_file = $this->phpbb_root_path . $this->d_edit . '/' . $row['id'] . '.' . $file->get('extension');
 			rename($destination_file, $destination_edit_file);
 			phpbb_chmod($destination_edit_file, CHMOD_READ);
+			chmod($destination_edit_file, 0666);
 			redirect($this->helper->route("bb3mobi_AvatarUpload_crop", array('avatar_id' => $row['id'], 'ext' => $file->extension)), false, true);
 		}
 

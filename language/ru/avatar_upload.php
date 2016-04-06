@@ -5,7 +5,7 @@
 * @package Avatar Upload
 * @version $Id: avatar_upload.php, v 1.0.0
 * @copyright BB3.Mobi 2015 (c) Anvar (apwa.ru)
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
 */
 /**

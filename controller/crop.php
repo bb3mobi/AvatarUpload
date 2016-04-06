@@ -4,7 +4,7 @@
 * @package Avatar Upload Crop
 * @copyright BB3.Mobi 2015 (c) Anvar(http://apwa.ru)
 * @version $Id: crop.php 2015-11-06 18:58:10 $
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
 */
 

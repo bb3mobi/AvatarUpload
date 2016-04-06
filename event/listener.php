@@ -2,9 +2,9 @@
 /**
 *
 * @package Avatar Upload
-* @version $Id: listener.php 2015-11-03 15:03:17 $
+* @version $Id: listener.php SD 2015-11-03 15:03:17 $
 * @copyright BB3.Mobi 2015 (c) Anvar(http://apwa.ru)
-* @license http://opensource.org/licenses/gpl-license.php GNU Public License
+* @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
 *
 */
 
@@ -50,10 +50,18 @@ class listener implements EventSubscriberInterface
 	{
 		if (!sizeof($event['error']))
 		{
+			$row = $event['row'];
+
+			/** Ignore */
+			if ($row['id'] != $this->user->data['user_id'])
+			{
+				return false;
+			}
+
 			$upload_file = $this->request->file('avatar_upload_file');
 			if (!empty($upload_file['name']))
 			{
-				if ($result = $this->resize->avatar_upload_resize($event['row']))
+				if ($result = $this->resize->avatar_upload_resize($row))
 				{
 					// Success! Lets save the result in the database
 					$result = array(
@@ -79,7 +87,11 @@ class listener implements EventSubscriberInterface
 
 	public function avatar_explain($event)
 	{
-		$this->resize->avatar_explain();
+		$mode = $this->request->variable('mode', '');
+		if ($mode == 'avatar')
+		{
+			$this->resize->avatar_explain();
+		}
 	}
 
 	public function acp_avatar_add_config($event)
@@ -88,7 +100,6 @@ class listener implements EventSubscriberInterface
 		if ($mode == 'avatar')
 		{
 			$new_config = array(
-				//'avatar_upload_filesize'	=> array('lang' => 'MAX_FILESIZE_UPLOAD',	'validate' => 'int:0',	'type' => 'number:0', 'explain' => true, 'append' => ' ' . $this->user->lang['BYTES']),
 				'avatar_upload_max_width'	=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => false, 'method' => false, 'explain' => false),
 				'avatar_upload_max_height'	=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => false, 'method' => false, 'explain' => false),
 				'avatar_upload_max'			=> array('lang' => 'MAX_AVATAR_UPLOAD',		'validate' => 'int:0',	'type' => 'dimension:0', 'explain' => true, 'append' => ' ' . $this->user->lang['PIXEL']),
